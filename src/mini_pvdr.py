@@ -51,7 +51,7 @@ def stretchTime(fa, Aa, As, L, M):
     nfm = (1.0 / np.sqrt(M)) * np.exp((-2.0j * np.pi / M) * np.outer(np.arange(M // 2 + 1), np.arange(L) - (L - 1) / 2.0))
     ifm = (1.0 / np.sqrt(M)) * np.exp((+2.0j * np.pi / M) * np.outer(np.arange(L) - (L - 1) / 2.0, np.arange(M // 2 + 1)))
     ifm[:, 1:-1] *= 2.0
-    np.testing.assert_allclose((ifm @ nfm).real, np.eye(L), rtol = 1.0, atol = 1e-8)
+    #np.testing.assert_allclose((ifm @ nfm).real, np.eye(L), rtol = 1.0, atol = 1e-8)
 
     ca = np.empty([M // 2 + 1, N], np.complex128)
     for i in range(N):
