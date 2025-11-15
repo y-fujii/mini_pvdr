@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+import cmath
 import heapq
 import wave
 import numpy as np
@@ -11,7 +12,7 @@ def calcPhase(pa0, cs0, cs1, Aa, As, M):
     ratio = As / Aa
     empty = [True for _ in cs1]
     pa1 = np.full(cs1.shape, np.nan)
-    heap = [(-np.abs(v), i, True) for i, v in enumerate(cs0)]
+    heap = [(-abs(v), i, True) for i, v in enumerate(cs0)]
     heapq.heapify(heap)
     count = 0
 
@@ -19,23 +20,23 @@ def calcPhase(pa0, cs0, cs1, Aa, As, M):
         _, i, isPrev = heapq.heappop(heap)
         if isPrev:
             if empty[i]:
-                dp = np.angle((cs1[i] / cs0[i]) * np.exp((-2.0j * np.pi * Aa / M) * i))
-                pa1[i] = pa0[i] + ratio * dp + (2.0 * np.pi * As / M) * i
+                dp = cmath.phase((cs1[i] / cs0[i]) * cmath.exp((-2.0j * cmath.pi * Aa / M) * i))
+                pa1[i] = pa0[i] + ratio * dp + (2.0 * cmath.pi * As / M) * i
                 empty[i] = False
-                heapq.heappush(heap, (-np.abs(cs1[i]), i, False))
+                heapq.heappush(heap, (-abs(cs1[i]), i, False))
                 count += 1
         else:
             if i >= 1 and empty[i - 1]:
-                dp = np.angle(cs1[i - 1] / cs1[i])
+                dp = cmath.phase(cs1[i - 1] / cs1[i])
                 pa1[i - 1] = pa1[i] + ratio * dp
                 empty[i - 1] = False
-                heapq.heappush(heap, (-np.abs(cs1[i - 1]), i - 1, False))
+                heapq.heappush(heap, (-abs(cs1[i - 1]), i - 1, False))
                 count += 1
             if i < len(cs1) - 1 and empty[i + 1]:
-                dp = np.angle(cs1[i + 1] / cs1[i])
+                dp = cmath.phase(cs1[i + 1] / cs1[i])
                 pa1[i + 1] = pa1[i] + ratio * dp
                 empty[i + 1] = False
-                heapq.heappush(heap, (-np.abs(cs1[i + 1]), i + 1, False))
+                heapq.heappush(heap, (-abs(cs1[i + 1]), i + 1, False))
                 count += 1
 
     assert not any(empty) and not np.any(np.isnan(pa1))
