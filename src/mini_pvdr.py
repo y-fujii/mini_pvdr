@@ -6,7 +6,7 @@ import wave
 import numpy as np
 
 
-def calcPhase(pa0, cs0, cs1, Aa, As, M):
+def calcPhase(pa0, cs0, cs1, Aa, As, M2):
     assert len(pa0) == len(cs0) and len(cs0) == len(cs1)
 
     ratio = As / Aa
@@ -20,8 +20,8 @@ def calcPhase(pa0, cs0, cs1, Aa, As, M):
         _, i, isPrev = heapq.heappop(heap)
         if isPrev:
             if empty[i]:
-                dp = cmath.phase((cs1[i] / cs0[i]) * cmath.exp((-2.0j * cmath.pi * Aa / M) * i))
-                pa1[i] = pa0[i] + ratio * dp + (2.0 * cmath.pi * As / M) * i
+                dp = cmath.phase((cs1[i] / cs0[i]) * cmath.exp((-1.0j * cmath.pi * Aa / M2) * i))
+                pa1[i] = pa0[i] + ratio * dp + (cmath.pi * As / M2) * i
                 empty[i] = False
                 heapq.heappush(heap, (-abs(cs1[i]), i, False))
                 count += 1
@@ -42,29 +42,26 @@ def calcPhase(pa0, cs0, cs1, Aa, As, M):
     assert not any(empty) and not np.any(np.isnan(pa1))
     return pa1
 
-def stretchTime(fa, Aa, As, L, M):
-    N = (len(fa) - L) // Aa
-    window = np.sqrt(2.0 / 3.0) * np.sin((np.pi / L) * (1.0 / 2.0 + np.arange(L))) ** 2
+def stretchTime(fa, Aa, As, L2, M2):
+    N = (len(fa) - 2 * L2) // Aa
+    window = np.sqrt(2.0 / 3.0) * np.sin((np.pi / (2 * L2)) * np.arange(2 * L2)) ** 2
 
-    nfm = (1.0 / np.sqrt(M)) * np.exp((-2.0j * np.pi / M) * np.outer(np.arange(M // 2 + 1), np.arange(L) - (L - 1) / 2.0))
-    ifm = (1.0 / np.sqrt(M)) * np.exp((+2.0j * np.pi / M) * np.outer(np.arange(L) - (L - 1) / 2.0, np.arange(M // 2 + 1)))
-    ifm[:, 1:-1] *= 2.0
-    #np.testing.assert_allclose((ifm @ nfm).real, np.eye(L), rtol = 1.0, atol = 1e-8)
-
-    ca = np.empty([M // 2 + 1, N], np.complex128)
+    ca = np.empty([M2 + 1, N], np.complex128)
     for i in range(N):
-        ca[:, i] = nfm @ (window * fa[Aa * i : Aa * i + L])
+        windowed = window * fa[Aa * i : Aa * i + 2 * L2]
+        ca[:, i] = np.fft.rfft(np.concatenate([windowed[L2 :], np.zeros(2 * M2 - 2 * L2), windowed[: L2]]))
 
     cs = np.empty_like(ca)
     cs[:, 0] = ca[:, 0]
     ps = np.angle(ca[:, 0])
     for i in range(1, N):
-        ps = calcPhase(ps, ca[:, i - 1], ca[:, i], Aa, As, M)
+        ps = calcPhase(ps, ca[:, i - 1], ca[:, i], Aa, As, M2)
         cs[:, i] = np.abs(ca[:, i]) * np.exp(1.0j * ps)
 
-    fs = np.zeros(As * N + L)
+    fs = np.zeros(As * N + 2 * L2)
     for i in range(N):
-        fs[As * i : As * i + L] += window * (ifm @ cs[:, i]).real
+        inversed = np.fft.irfft(cs[:, i])
+        fs[As * i : As * i + 2 * L2] += window * np.concatenate([inversed[2 * M2 - L2 :], inversed[: L2]]).real
 
     return fs
 
@@ -79,7 +76,7 @@ def main():
         fa = np.frombuffer(f.readframes(f.getnframes()), "<h")
     fa = fa.astype(np.float64) / 32768.0
 
-    fs = stretchTime(fa, int(np.round(1024.0 / float(sys.argv[1]))), 1024, 4096, 8192)
+    fs = stretchTime(fa, int(np.round(1024.0 / float(sys.argv[1]))), 1024, 2048, 4096)
 
     fs = np.clip(np.round(32768.0 * fs), -32768.0, 32767.0).astype("<h")
     with wave.open(sys.argv[3], "wb") as f:
