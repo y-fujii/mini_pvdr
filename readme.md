@@ -1,23 +1,25 @@
 # mini_pvdr.py
 
-mini_pvdr.py is a minimal (< 100 SLOC) implementation of "Phase Vocoder Done Right", primarily for (my personal) research/learning purposes.
+mini_pvdr.py is a polyphonic audio time-stretcher and pitch-shifter powered by Phase Gradient Heap Integration.  It is a small (&simeq; 100 SLOC) implementation, primarily intended for (my personal) research and learning purposes.
 
-Note that several processes are simplified in this implementation.  DO NOT USE IT TO EVALUATE THE ORIGINAL PAPER.
+Note that several processes in this implementation are simplified from those described in the paper.  **Do not use it to evaluate the original paper.**
 
 ## Usage
 
 ```
-./src/mini_pvdr.py stretch_factor src.wav dst.wav
+./src/mini_pvdr.py time_factor pitch_factor src.wav dst.wav
 ```
 
 It supports 16-bit mono wave files only.
 
 ## Implementation notes
 
-- It is important to align the origin of fourier transform with the center of the window, because the positions of wave packets are scaled in phase integration.
+- It is important to align the origin of Fourier transform with the center of the window function, because the positions of wave packets are scaled in phase integration.
 
 - mini_pvdr.py uses a simple nearest-neighbor difference scheme rather than the four-point difference scheme used in the paper. While simple scheme yields better results in my tests, it may be caused by the incorrect implementation.
 
+- mini_pvdr.py processes time-stretching and pitch-shifting simultaneously by using an asymmetric FFT/inverse-FFT pair, rather than time-stretching-then-resampling method. I don't know whether this method is better or worse.
+
 ## References
 
-- [Z. Průša and N. Holighaus, "Phase Vocoder Done Right", 2017](https://doi.org/10.23919/EUSIPCO.2017.8081353).
+- [Z. Průša and N. Holighaus, "Phase Vocoder Done Right", 2017](https://doi.org/10.23919/EUSIPCO.2017.8081353) ([arXiv:2202.07382](https://arxiv.org/abs/2202.07382)).
