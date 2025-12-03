@@ -43,6 +43,7 @@ def calcPhase(pa0, cs0, cs1, ra, rs):
     return pa1
 
 def process(fa, Aa, La, As, Ls, Mf):
+    assert La % 2 == 0 and Ls % 2 == 0
     N = (len(fa) - La) // Aa
 
     window = np.sqrt(2.0 / 3.0) * np.sin((np.pi / La) * np.arange(La)) ** 2
@@ -78,7 +79,7 @@ def main():
     fa = fa.astype(np.float64) / 32768.0
 
     kt, kp = float(sys.argv[1]), float(sys.argv[2])
-    fs = process(fa, round(1024.0 / (kt * kp)), 4096, round(1024.0 / kp), round(4096.0 / kp), 2)
+    fs = process(fa, round(1024.0 / (kt * kp)), 4096, round(1024.0 / kp), 4 * round(1024.0 / kp), 2)
 
     fs = np.clip(np.round(32768.0 * fs), -32768.0, 32767.0).astype("<h")
     with wave.open(sys.argv[4], "wb") as f:
