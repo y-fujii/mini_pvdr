@@ -45,7 +45,7 @@ def calc_pghi(pa0, cs0, cs1, ra, rs):
     assert not any(empty) and not np.any(np.isnan(pa1))
     return pa1
 
-def process(fa, Aa, La, As, Ls, Mf):
+def process(fa, Aa, La, As, Ls, Mf = 2):
     assert La % 2 == 0 and Ls % 2 == 0 and Ls % (4 * As) == 0
     N = (len(fa) - La) // Aa
 
@@ -74,6 +74,7 @@ def main():
     if len(sys.argv) != 5:
         print(f"Usage: {sys.argv[0]} time_factor pitch_factor src.wav dst.wav")
         return
+    kt, kp = float(sys.argv[1]), float(sys.argv[2])
 
     with wave.open(sys.argv[3]) as f:
         assert f.getnchannels() == 1 and f.getsampwidth() == 2
@@ -81,9 +82,8 @@ def main():
         fa = np.frombuffer(f.readframes(f.getnframes()), "<h")
     fa = fa.astype(np.float64) / 32768.0
 
-    kt, kp = float(sys.argv[1]), float(sys.argv[2])
-    fs = process(fa, round(1024.0 / (kt * kp)), 4096, round(1024.0 / kp), 4 * round(1024.0 / kp), 2)
-    #fs = process(fa, round(1024.0 / kt), 2 * round(2048.0 * kp), 1024, 4096, 2)
+    fs = process(fa, round(1024.0 / (kt * kp)), 4096, round(1024.0 / kp), 4 * round(1024.0 / kp))
+    #fs = process(fa, round(1024.0 / kt), 2 * round(2048.0 * kp), 1024, 4096)
 
     fs = np.clip(np.round(32768.0 * fs), -32768.0, 32767.0).astype("<h")
     with wave.open(sys.argv[4], "wb") as f:
@@ -92,4 +92,5 @@ def main():
         f.setframerate(rate)
         f.writeframes(fs)
 
-main()
+if __name__ == "__main__":
+    main()

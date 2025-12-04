@@ -1,0 +1,5 @@
+[project]
+name = "mini_pvdr"
+version = "0.0.0"
+dependencies = ["numpy"]
+scripts.mini_pvdr = "mini_pvdr:main"

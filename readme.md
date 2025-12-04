@@ -1,10 +1,12 @@
 # mini_pvdr.py
 
-mini_pvdr.py is a polyphonic audio time-stretcher and pitch-shifter using Phase Gradient Heap Integration method.  It is a small (&simeq; 100 SLOC) implementation, primarily intended for (my personal) learning/experiment/research purposes.
+mini_pvdr.py is a polyphonic audio time-stretcher and pitch-shifter using Phase Gradient Heap Integration method.  I keep it minimal (&simeq; 100 SLOC) because it is developed primarily for (my personal) learning/experiment/research purposes.
 
 Note that several processes in this implementation are simplified from those described in the paper.  **Do not use it to evaluate the original paper.**
 
 ## Usage
+
+mini_pvdr.py can be installed with standard python packaging tools, or you can try it by:
 
 ```
 pip install numpy
